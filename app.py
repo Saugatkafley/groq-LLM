@@ -11,6 +11,9 @@ import gradio as gr
 from agent import Agent
 
 
+SYSTEM_PROMPT = "You are a helpful assistant."
+
+
 # convert chat history to agent state
 def convert_to_agent_state(chat_history):
 
@@ -28,7 +31,6 @@ def get_streaming_response(
     model_name: str, message_content: str, chat_history: list = []
 ):
 
-    SYSTEM_PROMPT = "You are a helpful assistant."
     model = ChatGroq(model=model_name, temperature=0)  # reduce inference cost
     agent = Agent(model, system=SYSTEM_PROMPT)
     # convert chat history to agent state
@@ -52,14 +54,21 @@ def get_streaming_response(
 
 
 with gr.Blocks(theme="soft") as demo:
+    gr.Markdown(
+        value="""
+        <h1 align="center">Lang-graph Agent Groq</h1>
+        <h4 align="center">Chatbot Demo</h4>
+        <h3 align="center">Powered by Langchain and Groq</h3>
+        """
+    )
     model_name = gr.Dropdown(
         choices=[
-            "mixtral-8x7b-32768",
-            "llama3-8b-8192",
             "llama3-70b-8192",
+            "llama3-8b-8192",
             "gemma-7b-it",
+            "mixtral-8x7b-32768",
         ],
-        value="mixtral-8x7b-32768",
+        value="llama3-70b-8192",
         label="Model Name",
         interactive=True,
     )
