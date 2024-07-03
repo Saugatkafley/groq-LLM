@@ -2,17 +2,20 @@
 import os
 from dotenv import load_dotenv
 
-from groq import Groq
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_groq import ChatGroq
+
 
 load_dotenv()
-client = Groq(api_key=os.environ["GROQ_API_KEY"])
-chat_completion = client.chat.completions.create(
-    messages=[
-        {
-            "role": "user",
-            "content": "Explain the importance of low latency LLMs",
-        }
-    ],
+client = ChatGroq(
+    temperature=0,
     model="mixtral-8x7b-32768",
 )
-print(chat_completion.choices[0].message.content)
+
+SYSTEM = "You are a helpful assistant."
+HUMAN = "{text}"
+prompt = ChatPromptTemplate.from_messages([("system", SYSTEM), ("human", HUMAN)])
+
+chain = prompt | client
+answer = chain.invoke({"text": "Explain the importance of low latency for LLMs."})
+print(answer)
