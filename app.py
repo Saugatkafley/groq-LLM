@@ -10,11 +10,6 @@ from langchain_groq import ChatGroq
 import gradio as gr
 from agent import Agent
 
-MODEL_NAME = "mixtral-8x7b-32768"
-SYSTEM_PROMPT = "You are a helpful assistant."
-model = ChatGroq(model=MODEL_NAME, temperature=0)  # reduce inference cost
-agent = Agent(model, system=SYSTEM_PROMPT)
-
 
 # convert chat history to agent state
 def convert_to_agent_state(chat_history):
@@ -29,7 +24,13 @@ def convert_to_agent_state(chat_history):
     return agent_states
 
 
-def get_streaming_response(message_content, chat_history: list = []):
+def get_streaming_response(
+    model_name: str, message_content: str, chat_history: list = []
+):
+
+    SYSTEM_PROMPT = "You are a helpful assistant."
+    model = ChatGroq(model=model_name, temperature=0)  # reduce inference cost
+    agent = Agent(model, system=SYSTEM_PROMPT)
     # convert chat history to agent state
     agent_states = convert_to_agent_state(chat_history)
 
@@ -39,7 +40,7 @@ def get_streaming_response(message_content, chat_history: list = []):
 
     # Append user message to chat history
     chat_history.append([message_content, response["messages"][-1].content])
-    
+
     # Variable to build the assistant's response incrementally
     assistant_response = ""
 
@@ -51,13 +52,24 @@ def get_streaming_response(message_content, chat_history: list = []):
 
 
 with gr.Blocks(theme="soft") as demo:
+    model_name = gr.Dropdown(
+        choices=[
+            "mixtral-8x7b-32768",
+            "llama3-8b-8192",
+            "llama3-70b-8192",
+            "gemma-7b-it",
+        ],
+        value="mixtral-8x7b-32768",
+        label="Model Name",
+        interactive=True,
+    )
     chatbot = gr.Chatbot()
     message = gr.Textbox()
 
     submit = gr.Button("Submit", variant="primary")
     submit.click(
         get_streaming_response,
-        inputs=[message, chatbot],
+        inputs=[model_name, message, chatbot],
         outputs=[chatbot],
         # queue=False,
     )
