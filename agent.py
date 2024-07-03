@@ -2,12 +2,11 @@
 # Core :
 from typing import TypedDict, Annotated
 import operator
+from colorama import Fore
 
 # langchain
 from langchain_groq import ChatGroq
 from langchain_core.messages import (
-    HumanMessage,
-    AIMessage,
     SystemMessage,
     AnyMessage,
     ToolMessage,
@@ -41,6 +40,7 @@ class Agent:
         self.graph = graph.compile()
         self.tools = {t.name: t for t in tools} if tools is not None else None
         self.model = model
+        self.messages = []
         if self.tools is not None:
             self.model = model.bind_tools(tools)
 
@@ -50,7 +50,7 @@ class Agent:
 
     def call_groq(self, state: AgentState):
         messages = state["messages"]
-        if self.system:
+        if self.system and len(messages) == 1:
             messages = [SystemMessage(content=self.system)] + messages
         message = self.model.invoke(messages)
         return {"messages": [message]}
