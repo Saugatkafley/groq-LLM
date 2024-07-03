@@ -15,10 +15,6 @@ agent = Agent(model, system=SYSTEM_PROMT)
 import time
 
 
-def get_response(message, history):
-    return "", history + [[message, None]]
-
-
 def get_streaming_response(message_content, chat_history):
     response = agent.graph.invoke(
         {"messages": [HumanMessage(content=message_content)]}
