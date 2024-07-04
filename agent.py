@@ -1,17 +1,11 @@
 # Class for an agent that can be used in LangChain.
 # Core :
-from typing import TypedDict, Annotated
 import operator
-from colorama import Fore
+from typing import Annotated, TypedDict
+from langgraph.graph import END, StateGraph
 
 # langchain
-from langchain_groq import ChatGroq
-from langchain_core.messages import (
-    SystemMessage,
-    AnyMessage,
-    ToolMessage,
-)
-from langgraph.graph import StateGraph, END
+from langchain_core.messages import AnyMessage, SystemMessage, ToolMessage
 
 
 class AgentState(TypedDict):
