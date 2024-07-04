@@ -14,7 +14,7 @@ from tools import WikiInputs
 from langchain_community.tools import WikipediaQueryRun
 from langchain_community.utilities import WikipediaAPIWrapper
 
-api_wrapper = WikipediaAPIWrapper(top_k_results=1, doc_content_chars_max=200 , lang="en")
+api_wrapper = WikipediaAPIWrapper(top_k_results=1, doc_content_chars_max=200, lang="en")
 tool = WikipediaQueryRun(api_wrapper=api_wrapper)
 
 tool = WikipediaQueryRun(
@@ -39,10 +39,17 @@ MODEL_NAMES = [
 
 
 def get_streaming_response(
-    model_name: str, message_content: str, chat_history: list = []
+    model_name_param: str,
+    is_search_tools: bool = False,
+    message_content: str = "",
+    chat_history: list = [],
 ):
-    model = ChatGroq(model=model_name, temperature=0)  # reduce inference cost
-    agent = Agent(model, tools=[tool], system=SYSTEM_PROMPT)
+    model = ChatGroq(model=model_name_param, temperature=0)  # reduce inference cost
+    print(is_agent_tools)
+    if is_search_tools is True:
+        agent = Agent(model, tools=[tool], system=SYSTEM_PROMPT)
+    else:
+        agent = Agent(model, system=SYSTEM_PROMPT)
     agent_states = convert_to_agent_state(SYSTEM_PROMPT, chat_history)
 
     response = agent.graph.invoke(
@@ -68,7 +75,7 @@ def draw_agent_graph():
     # )
 
 
-with gr.Blocks(theme="soft") as demo:
+with gr.Blocks(theme="darkdefault") as demo:
     gr.Markdown(
         value="""
         <h1 align="center">Lang-graph Agent Groq</h1>
@@ -76,19 +83,28 @@ with gr.Blocks(theme="soft") as demo:
         <h3 align="center">Powered by LangGraph,Groq and Wikipedia</h3>
         """
     )
-    model_name = gr.Dropdown(
-        choices=MODEL_NAMES,
-        value=MODEL_NAMES[0],
-        label="Model Name",
-        interactive=True,
+    with gr.Row():
+        model_name = gr.Dropdown(
+            choices=MODEL_NAMES,
+            value=MODEL_NAMES[0],
+            label="Model Name",
+            interactive=True,
+        )
+        is_agent_tools = gr.Radio(
+            choices=[True, False],
+            value=False,
+            label="WikiPedia Tools",
+            interactive=True,
+        )
+    system = gr.Textbox(
+        value=SYSTEM_PROMPT, interactive=False, label="System Prompt Message"
     )
-    system = gr.Textbox(value=SYSTEM_PROMPT, interactive=False, label="System Prompt")
     chatbot = gr.Chatbot()
     message = gr.Textbox()
     submit = gr.Button("Submit", variant="primary")
     submit.click(
         get_streaming_response,
-        inputs=[model_name, message, chatbot],
+        inputs=[model_name, is_agent_tools, message, chatbot],
         outputs=[chatbot],
         # queue=False,
     )
