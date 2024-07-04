@@ -60,6 +60,7 @@ class Agent:
                     result = "bad tool name, retry"  # instruct LLM to retry if bad
                 else:
                     result = self.tools[t["name"]].invoke(t["args"])
+                    print(result)
                 results.append(
                     ToolMessage(
                         tool_call_id=t["id"], name=t["name"], content=str(result)
