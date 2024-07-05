@@ -30,4 +30,4 @@ ENV GRADIO_SERVER_NAME="0.0.0.0"
 ENV GRADIO_SERVER_PORT="7860"
 ENV GROQ_API_KEY=$(cat /run/secrets/GROQ_API_KEY)
 
-CMD ["python", "app.py"]
+CMD ["gradio", "app.py"]
