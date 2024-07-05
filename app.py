@@ -45,7 +45,6 @@ def get_streaming_response(
     chat_history: list = [],
 ):
     model = ChatGroq(model=model_name_param, temperature=0)  # reduce inference cost
-    print(is_agent_tools)
     if is_search_tools is True:
         agent = Agent(model, tools=[tool], system=SYSTEM_PROMPT)
     else:
@@ -75,7 +74,7 @@ def draw_agent_graph():
     # )
 
 
-with gr.Blocks(theme="darkdefault") as demo:
+with gr.Blocks(theme="default") as demo:
     gr.Markdown(
         value="""
         <h1 align="center">Lang-graph Agent Groq</h1>
@@ -106,7 +105,7 @@ with gr.Blocks(theme="darkdefault") as demo:
         get_streaming_response,
         inputs=[model_name, is_agent_tools, message, chatbot],
         outputs=[chatbot],
-        # queue=False,
+        queue=True,
     )
     clear = gr.ClearButton()
     clear.click(lambda: [], None, chatbot, queue=False)
@@ -115,4 +114,5 @@ with gr.Blocks(theme="darkdefault") as demo:
         generate_graph = gr.Button("Get Agent Graph", variant="secondary")
         image_graph = gr.Image()
         generate_graph.click(draw_agent_graph, None, outputs=[image_graph])
-demo.launch()
+if __name__ == "__main__":
+    demo.launch()
