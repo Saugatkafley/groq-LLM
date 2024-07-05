@@ -1,7 +1,7 @@
 FROM python:3.10-slim
-RUN useradd -m -u 1000 user
+# RUN useradd -m -u 1000 user
 # switch to user
-USER user
+# USER user
 # Set home to the user's home directory
 ENV HOME=/home/user \
 	PATH=/home/user/.local/bin:$PATH
