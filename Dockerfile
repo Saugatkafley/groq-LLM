@@ -1,7 +1,14 @@
 FROM python:3.10-slim
+RUN useradd -m -u 1000 user
+# switch to user
+USER user
+# Set home to the user's home directory
+ENV HOME=/home/user \
+	PATH=/home/user/.local/bin:$PATH
 
-WORKDIR /user/src/app
-COPY . .
+WORKDIR /$HOME/app
+# Copy the current directory contents into the container at $HOME/app setting the owner to the user
+COPY --chown=user . $HOME/app
 
 # Install dependencies including gcc and graphviz
 RUN apt-get update && \
@@ -15,5 +22,6 @@ RUN pip install -r requirements.txt
 EXPOSE 7860
 ENV GRADIO_SERVER_NAME="0.0.0.0"
 ENV GRADIO_SERVER_PORT="7860"
+ENV GROQ_API_KEY=$(cat /run/secrets/GROQ_API_KEY)
 CMD [ "gradio" ,"app.py" ]
 # CMD ["python", "/user/src/app/app.py"]
