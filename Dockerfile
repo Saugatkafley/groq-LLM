@@ -8,7 +8,7 @@ WORKDIR /$HOME/app
 # Install dependencies including gcc and graphviz
 RUN apt-get update && \
     apt-get install -y gcc graphviz graphviz-dev libgraphviz-dev \
-    apt-get clean && rm -rf /var/lib/apt/lists/*
+# apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Update pip to the latest version
 RUN pip install --upgrade pip
