@@ -14,7 +14,7 @@ RUN apt-get update && \
 RUN pip install --upgrade pip
 
 # Install pygraphviz with --build-option flags
-RUN pip install --no-cache-dir --build-option="--include-path=/usr/include/graphviz" --build-option="--library-path=/usr/lib/graphviz" pygraphviz
+# RUN pip install --no-cache-dir --build-option="--include-path=/usr/include/graphviz" --build-option="--library-path=/usr/lib/graphviz" pygraphviz
 
 # Install other dependencies
 RUN pip install --no-cache-dir -r requirements.txt
