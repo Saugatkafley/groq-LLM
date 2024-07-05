@@ -41,10 +41,11 @@ MODEL_NAMES = [
 def get_streaming_response(
     model_name_param: str,
     is_search_tools: bool = False,
+    groq_api_key:str = "",
     message_content: str = "",
     chat_history: list = [],
 ):
-    model = ChatGroq(model=model_name_param, temperature=0)  # reduce inference cost
+    model = ChatGroq(model=model_name_param, api_key = groq_api_key, temperature=0)  
     if is_search_tools is True:
         agent = Agent(model, tools=[tool], system=SYSTEM_PROMPT)
     else:
@@ -69,9 +70,6 @@ def draw_agent_graph():
     return gr.Image(
         "graph.png", type="filepath", label="Agent Graph", interactive=False
     )
-    # return Image.open(
-    #     Agent(model_name).graph.get_graph().draw_png(output_file_path="graph.png")
-    # )
 
 
 with gr.Blocks(theme="default") as demo:
@@ -95,15 +93,13 @@ with gr.Blocks(theme="default") as demo:
             label="WikiPedia Tools",
             interactive=True,
         )
-    system = gr.Textbox(
-        value=SYSTEM_PROMPT, interactive=False, label="System Prompt Message"
-    )
+        groq_api_key = gr.Textbox(label = "GROQ API Key" , interactive = True )
     chatbot = gr.Chatbot()
     message = gr.Textbox()
     submit = gr.Button("Submit", variant="primary")
     submit.click(
         get_streaming_response,
-        inputs=[model_name, is_agent_tools, message, chatbot],
+        inputs=[model_name, is_agent_tools,groq_api_key, message, chatbot],
         outputs=[chatbot],
         queue=True,
     )
