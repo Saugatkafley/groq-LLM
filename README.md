@@ -1,11 +1,10 @@
 ---
-title: Groq Llm
+title: Mechanical LLM
 emoji: 🏃
 colorFrom: purple
 colorTo: gray
-sdk: gradio
-sdk_version: 4.37.2
-app_file: app.py
+sdk: docker
+app_port: 7860
 pinned: false
 license: mit
 ---
