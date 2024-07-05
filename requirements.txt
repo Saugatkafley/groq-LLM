@@ -32,7 +32,6 @@ frozenlist==1.4.1
 fsspec==2024.6.1
 gradio==4.37.2
 gradio_client==1.0.2
-gradio_toggle==1.0.3
 graphviz==0.20.3
 greenlet==3.0.3
 groq==0.9.0
@@ -57,6 +56,7 @@ kiwisolver==1.4.5
 langchain==0.2.6
 langchain-community==0.2.6
 langchain-core==0.2.10
+langchain-experimental==0.0.62
 langchain-groq==0.1.6
 langchain-text-splitters==0.2.2
 langgraph==0.1.5
