@@ -2,7 +2,6 @@ FROM python:3.10-slim
 WORKDIR /user/src/app
 COPY . .
 
-
 # Install dependencies including gcc and graphviz
 RUN apt-get update && \
     apt-get install -y gcc graphviz graphviz-dev libgraphviz-dev 
