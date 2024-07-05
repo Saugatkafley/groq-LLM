@@ -7,16 +7,19 @@ ENV HOME=/home/user \
 	PATH=/home/user/.local/bin:$PATH
 
 WORKDIR /$HOME/app
-# Copy the current directory contents into the container at $HOME/app setting the owner to the user
-COPY --chown=user . $HOME/app
+
 
 # Install dependencies including gcc and graphviz
 RUN apt-get update && \
-    apt-get install -y gcc graphviz graphviz-dev libgraphviz-dev
+    apt-get install -y gcc graphviz graphviz-dev libgraphviz-dev \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# apt-get clean && rm -rf /var/lib/apt/lists/*
-RUN pip install --upgrade pip
-RUN pip install -r requirements.txt
+# Try and run pip command after setting the user with `USER user` to avoid permission issues with Python
+RUN pip install --no-cache-dir --upgrade pip
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy the current directory contents into the container at $HOME/app setting the owner to the user
+COPY --chown=user . $HOME/app
 
 # Expose port
 EXPOSE 7860
