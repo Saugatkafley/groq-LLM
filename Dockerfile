@@ -17,7 +17,7 @@ RUN pip install --upgrade pip
 # RUN pip install --no-cache-dir --build-option="--include-path=/usr/include/graphviz" --build-option="--library-path=/usr/lib/graphviz" pygraphviz
 
 # Install other dependencies
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r /$HOME/app/requirements.txt
 
 # Copy the current directory contents into the container at $HOME/app setting the owner to the user
 COPY --chown=user . $HOME/app
