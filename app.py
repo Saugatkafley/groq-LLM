@@ -6,23 +6,30 @@ from PIL import Image
 load_dotenv()
 
 from agent import Agent
-from utils import convert_to_agent_state
+from utils import convert_to_agent_state, extract_python_code
 import gradio as gr
 from langchain_core.messages import HumanMessage
 from langchain_groq import ChatGroq
 from tools import WikiInputs
 from langchain_community.tools import WikipediaQueryRun
 from langchain_community.utilities import WikipediaAPIWrapper
+from langchain_experimental.utilities import PythonREPL
+from langchain.agents import Tool
 
 api_wrapper = WikipediaAPIWrapper(top_k_results=1, doc_content_chars_max=200, lang="en")
-tool = WikipediaQueryRun(api_wrapper=api_wrapper)
-
-tool = WikipediaQueryRun(
+wiki_tool = WikipediaQueryRun(
     name="wiki-tool",
     description="look up things in wikipedia",
     args_schema=WikiInputs,
     api_wrapper=api_wrapper,
     return_direct=True,
+)
+python_repl = PythonREPL()
+# You can create the tool to pass to an agent
+repl_tool = Tool(
+    name="python_repl",
+    description="A Python shell. Use this to execute python commands. Input should be a valid python command. If you want to see the output of a value, you should print it out with `print(...)`.",
+    func=python_repl.run,
 )
 
 SYSTEM_PROMPT = """You are a smart research assistant that is specialized on solving complex Mechanical Engineering problems. Use the search engine from Wikipedia  to look up information. \
@@ -35,6 +42,7 @@ MODEL_NAMES = [
     "llama3-8b-8192",
     "gemma-7b-it",
     "mixtral-8x7b-32768",
+    "gemma2-9b-it",
 ]
 
 
@@ -47,7 +55,7 @@ def get_streaming_response(
     model = ChatGroq(model=model_name_param, temperature=0)  # reduce inference cost
     print(is_agent_tools)
     if is_search_tools is True:
-        agent = Agent(model, tools=[tool], system=SYSTEM_PROMPT)
+        agent = Agent(model, tools=[wiki_tool], system=SYSTEM_PROMPT)
     else:
         agent = Agent(model, system=SYSTEM_PROMPT)
     agent_states = convert_to_agent_state(SYSTEM_PROMPT, chat_history)
@@ -57,10 +65,12 @@ def get_streaming_response(
     )
 
     chat_history.append([message_content, response["messages"][-1].content])
+    py_code = extract_python_code(response["messages"][-1].content)
 
+    # python_repl.run(py_code)
     assistant_response = ""
     for character in response["messages"][-1].content:
-        time.sleep(0.02)  # Adjusted sleep for smoother streaming
+        time.sleep(0.01)  # Adjusted sleep for smoother streaming
         assistant_response += character
         chat_history[-1][1] = assistant_response  # Update the assistant's message
         yield chat_history
@@ -75,7 +85,7 @@ def draw_agent_graph():
     # )
 
 
-with gr.Blocks(theme="darkdefault") as demo:
+with gr.Blocks(theme="default") as demo:
     gr.Markdown(
         value="""
         <h1 align="center">Lang-graph Agent Groq</h1>
