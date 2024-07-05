@@ -1,9 +1,7 @@
 FROM python:3.10-slim
-# Set home to the user's home directory
-ENV HOME=/home/user \
-    PATH=/home/user/.local/bin:$PATH
+WORKDIR /user/src/app
+COPY . .
 
-WORKDIR /$HOME/app
 
 # Install dependencies including gcc and graphviz
 RUN apt-get update && \
@@ -17,10 +15,10 @@ RUN pip install --upgrade pip
 # RUN pip install --no-cache-dir --build-option="--include-path=/usr/include/graphviz" --build-option="--library-path=/usr/lib/graphviz" pygraphviz
 
 # Install other dependencies
-RUN pip install --no-cache-dir -r $HOME/app/requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy the current directory contents into the container at $HOME/app setting the owner to the user
-COPY --chown=user . $HOME/app
+# COPY --chown=user . $HOME/app
 
 # Expose port
 EXPOSE 7860
