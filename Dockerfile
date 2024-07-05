@@ -1,4 +1,4 @@
-FROM ubuntu:slim
+FROM python:3.10-slim
 # Set home to the user's home directory
 ENV HOME=/home/user \
     PATH=/home/user/.local/bin:$PATH
@@ -26,5 +26,6 @@ COPY --chown=user. $HOME/app
 EXPOSE 7860
 ENV GRADIO_SERVER_NAME="0.0.0.0"
 ENV GRADIO_SERVER_PORT="7860"
-ENV GROQ_API_KEY=$(cat /run/secrets/GROQ_API_KEY)
+RUN --mount=type=secret,id=GROQ_API_KEY,mode=0444,required=true
+ENV GROQ_API_KEY=GROQ_API_KEY
 CMD [ "gradio","app.py" ]
