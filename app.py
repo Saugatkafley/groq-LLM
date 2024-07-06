@@ -14,6 +14,10 @@ from tools import WikiInputs
 from langchain_community.tools import WikipediaQueryRun
 from langchain_community.utilities import WikipediaAPIWrapper
 
+from langchain.tools.retriever import create_retriever_tool
+from rag import qdrant_retreiver
+
+# ==================TOOLs section==================
 api_wrapper = WikipediaAPIWrapper(top_k_results=1, doc_content_chars_max=200, lang="en")
 tool = WikipediaQueryRun(api_wrapper=api_wrapper)
 
@@ -25,10 +29,13 @@ tool = WikipediaQueryRun(
     return_direct=True,
 )
 
+
 SYSTEM_PROMPT = """You are a smart research assistant that is specialized on solving complex Mechanical Engineering problems. Use the search engine from Wikipedia  to look up information. \
 You are allowed to make multiple calls (either together or in sequence). \
 Only look up information when you are sure of what you want. \
 If you need to look up some information before asking a follow up question, you are allowed to do that!
+"""
+RETREIVER_PROMPT = """Use the context from the PDF to answer the question.
 """
 MODEL_NAMES = [
     "llama3-70b-8192",
@@ -36,18 +43,24 @@ MODEL_NAMES = [
     "gemma-7b-it",
     "mixtral-8x7b-32768",
 ]
+qdrant_retreiver = qdrant_retreiver("vit.pdf")
+retriever_tool = create_retriever_tool(
+    qdrant_retreiver,
+    "retrieve_pdf",
+    RETREIVER_PROMPT,
+)
 
 
 def get_streaming_response(
     model_name_param: str,
     is_search_tools: bool = False,
-    groq_api_key:str = "",
+    groq_api_key: str = "",
     message_content: str = "",
     chat_history: list = [],
 ):
-    model = ChatGroq(model=model_name_param, api_key = groq_api_key, temperature=0)  
+    model = ChatGroq(model=model_name_param, api_key=groq_api_key, temperature=0)
     if is_search_tools is True:
-        agent = Agent(model, tools=[tool], system=SYSTEM_PROMPT)
+        agent = Agent(model, tools=[retriever_tool], system=SYSTEM_PROMPT)
     else:
         agent = Agent(model, system=SYSTEM_PROMPT)
     agent_states = convert_to_agent_state(SYSTEM_PROMPT, chat_history)
@@ -93,13 +106,19 @@ with gr.Blocks(theme="default") as demo:
             label="WikiPedia Tools",
             interactive=True,
         )
-        groq_api_key = gr.Textbox(label = "GROQ API Key" , interactive = True )
+        is_rag_tool = gr.Checkbox(
+            # choices=[True, False
+            value=False,
+            label="RAG Tools",
+            interactive=True,
+        )
+        groq_api_key = gr.Textbox(label="GROQ API Key", interactive=True)
     chatbot = gr.Chatbot()
     message = gr.Textbox()
     submit = gr.Button("Submit", variant="primary")
     submit.click(
         get_streaming_response,
-        inputs=[model_name, is_agent_tools,groq_api_key, message, chatbot],
+        inputs=[model_name, is_agent_tools, groq_api_key, message, chatbot],
         outputs=[chatbot],
         queue=True,
     )
