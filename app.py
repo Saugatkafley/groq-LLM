@@ -17,6 +17,7 @@ from langchain_community.utilities import WikipediaAPIWrapper
 from langchain.tools.retriever import create_retriever_tool
 from rag import qdrant_retreiver
 
+
 # ==================TOOLs section==================
 api_wrapper = WikipediaAPIWrapper(top_k_results=1, doc_content_chars_max=200, lang="en")
 tool = WikipediaQueryRun(api_wrapper=api_wrapper)
@@ -72,7 +73,7 @@ def get_streaming_response(
         list: The updated chat history at each iteration.
 
     """
-    
+
     model = ChatGroq(model=model_name_param, api_key=groq_api_key, temperature=0)
     if search_tools == "RAG":
         agent = Agent(model, tools=[retriever_tool], system=SYSTEM_PROMPT)
@@ -102,7 +103,10 @@ def draw_agent_graph():
     )
 
 
-with gr.Blocks(theme="default") as demo:
+CSS = """
+#warning {background-color: #FFCCCB}
+.clear-btn button {color:red !important }"""
+with gr.Blocks(theme="default", css=CSS) as demo:
     gr.Markdown(
         value="""
         <h1 align="center">Lang-graph Agent Groq</h1>
@@ -126,17 +130,22 @@ with gr.Blocks(theme="default") as demo:
             label="Agent Tools",
             interactive=True,
         )
-    chatbot = gr.Chatbot(show_copy_button=True, avatar_images=None)
-    message = gr.Textbox()
-    submit = gr.Button("Submit", variant="primary")
-    submit.click(
-        get_streaming_response,
-        inputs=[model_name,groq_api_key, agent_tool, message, chatbot],
-        outputs=[chatbot],
-        queue=True,
+    chatbot = gr.Chatbot(
+        show_copy_button=True,
+        avatar_images=["assets/user.jpg", "assets/bot.jpg"],
     )
-    clear = gr.ClearButton()
-    clear.click(lambda: [], None, chatbot, queue=False)
+    with gr.Row():
+        message = gr.Textbox(min_width=600, max_lines=1, label="Message")
+        submit = gr.Button("Submit", variant="primary")
+        # give red background to clear button
+        clear = gr.ClearButton(elem_classes="clear-btn", variant="stop")
+        submit.click(
+            get_streaming_response,
+            inputs=[model_name, groq_api_key, agent_tool, message, chatbot],
+            outputs=[chatbot],
+            queue=True,
+        )
+        clear.click(lambda: [], None, chatbot, queue=False)
 
     with gr.Row():
         generate_graph = gr.Button("Get Agent Graph", variant="secondary")
