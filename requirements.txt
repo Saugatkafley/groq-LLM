@@ -10,12 +10,14 @@ attrs==23.2.0
 backoff==2.2.1
 beautifulsoup4==4.12.3
 certifi==2024.6.2
+cffi==1.16.0
 chardet==5.2.0
 charset-normalizer==3.3.2
 click==8.1.7
 colorama==0.4.6
 comm==0.2.2
 contourpy==1.2.1
+cryptography==42.0.8
 cycler==0.12.1
 dataclasses-json==0.6.7
 debugpy==1.8.2
@@ -106,8 +108,10 @@ orjson==3.10.5
 packaging==24.1
 pandas==2.2.2
 parso==0.8.4
+pdfminer.six==20240706
 pexpect==4.9.0
 pillow==10.4.0
+pillow_heif==0.17.0
 platformdirs==4.2.2
 portalocker==2.10.0
 prompt_toolkit==3.0.47
@@ -115,6 +119,8 @@ protobuf==5.27.2
 psutil==6.0.0
 ptyprocess==0.7.0
 pure-eval==0.2.2
+pycparser==2.22
+pycryptodome==3.20.0
 pydantic==2.8.0
 pydantic_core==2.20.0
 pydub==0.25.1
