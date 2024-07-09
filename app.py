@@ -20,7 +20,7 @@ from rag import qdrant_retreiver
 
 # ==================TOOLs section==================
 api_wrapper = WikipediaAPIWrapper(top_k_results=1, doc_content_chars_max=200, lang="en")
-tool = WikipediaQueryRun(api_wrapper=api_wrapper)
+
 
 wiki_tool = WikipediaQueryRun(
     name="wiki-tool",
@@ -36,26 +36,21 @@ You are allowed to make multiple calls (either together or in sequence). \
 Only look up information when you are sure of what you want. \
 If you need to look up some information before asking a follow up question, you are allowed to do that!
 """
-RETREIVER_PROMPT = """Use the context from the PDF to answer the question.
-"""
+RETREIVER_PROMPT = """Use the best context from the extracted documents to answer the question.Don't make up answers."""
 MODEL_NAMES = [
     "llama3-70b-8192",
     "llama3-8b-8192",
+    "gemma2-9b-it",
     "gemma-7b-it",
     "mixtral-8x7b-32768",
 ]
-qdrant_retreiver = qdrant_retreiver("vit.pdf")
-retriever_tool = create_retriever_tool(
-    qdrant_retreiver,
-    "retrieve_pdf",
-    RETREIVER_PROMPT,
-)
 
 
 def get_streaming_response(
     model_name_param: str,
     groq_api_key: str,
     search_tools: bool = False,
+    uploaded_files: str | list = None,
     message_content: str = "",
     chat_history: list = [],
 ):
@@ -76,6 +71,14 @@ def get_streaming_response(
 
     model = ChatGroq(model=model_name_param, api_key=groq_api_key, temperature=0)
     if search_tools == "RAG":
+
+        retriever = qdrant_retreiver(uploaded_files)
+        retriever_tool = create_retriever_tool(
+            retriever,
+            "retrieve_pdf",
+            RETREIVER_PROMPT,
+        )
+
         agent = Agent(model, tools=[retriever_tool], system=SYSTEM_PROMPT)
     elif search_tools == "wiki":
         agent = Agent(model, tools=[wiki_tool], system=SYSTEM_PROMPT)
@@ -91,7 +94,7 @@ def get_streaming_response(
 
     assistant_response = ""
     for character in response["messages"][-1].content:
-        time.sleep(0.02)  # Adjusted sleep for smoother streaming
+        time.sleep(0.01)  # Adjusted sleep for smoother streaming
         assistant_response += character
         chat_history[-1][1] = assistant_response  # Update the assistant's message
         yield chat_history
@@ -101,6 +104,11 @@ def draw_agent_graph():
     return gr.Image(
         "graph.png", type="filepath", label="Agent Graph", interactive=False
     )
+
+
+def upload_files(f):
+    # files
+    return gr.Files(f)
 
 
 CSS = """
@@ -114,7 +122,7 @@ with gr.Blocks(theme="default", css=CSS) as demo:
         <h3 align="center">Powered by LangGraph,Groq and Wikipedia</h3>
         """
     )
-    with gr.Row():
+    with gr.Row(variant="compact"):
         groq_api_key = gr.Textbox(
             label="GROQ API Key", interactive=True, placeholder="Enter GROQ_API_KEY"
         )
@@ -130,18 +138,40 @@ with gr.Blocks(theme="default", css=CSS) as demo:
             label="Agent Tools",
             interactive=True,
         )
-    chatbot = gr.Chatbot(
-        show_copy_button=True,
-        avatar_images=["assets/user.jpg", "assets/bot.jpg"],
-    )
-    with gr.Row():
-        message = gr.Textbox(min_width=600, max_lines=1, label="Message")
-        submit = gr.Button("Submit", variant="primary")
+    with gr.Row(variant="panel"):
+        with gr.Column():
+            files_upload = gr.Files(
+                file_count="multiple",
+                file_types=[".pdf"],
+                height=100,
+            )
+            terminal = gr.TextArea(
+                value="Terminal Output", interactive=True, min_width=500, max_lines=5
+            )
+            files_upload.upload(
+                upload_files, files_upload, files_upload, show_progress="full"
+            )
+
+        chatbot = gr.Chatbot(
+            show_copy_button=True,
+            min_width=900,
+            avatar_images=["assets/user.jpg", "assets/bot.jpg"],
+        )
+    with gr.Row(variant="panel"):
+        message = gr.Textbox(min_width=1200, max_lines=1, label="Message")
+        submit = gr.Button("Submit", variant="primary", size="sm")
         # give red background to clear button
-        clear = gr.ClearButton(elem_classes="clear-btn", variant="stop")
+        clear = gr.ClearButton(elem_classes="clear-btn", variant="stop", size="sm")
         submit.click(
             get_streaming_response,
-            inputs=[model_name, groq_api_key, agent_tool, message, chatbot],
+            inputs=[
+                model_name,
+                groq_api_key,
+                agent_tool,
+                files_upload,
+                message,
+                chatbot,
+            ],
             outputs=[chatbot],
             queue=True,
         )
