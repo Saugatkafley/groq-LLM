@@ -38,6 +38,8 @@ If you need to look up some information before asking a follow up question, you 
 """
 RETREIVER_PROMPT = """Use the best context from the extracted documents to answer the question.Don't make up answers."""
 MODEL_NAMES = [
+    "llama3-groq-70b-8192-tool-use-preview",
+    "llama-3.1-70b-versatile",
     "llama3-70b-8192",
     "llama3-8b-8192",
     "gemma2-9b-it",
