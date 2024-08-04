@@ -1,0 +1,14 @@
+Calling: {'name': 'wiki-tool', 'args': {'query': 'laws of thermodynamics'}, 'id': 'call_e581'}
+
+ ....calling tool....
+ARGS to tool: -----> {'query': 'laws of thermodynamics'}
+RESULT from tool: -----> Page: Laws of thermodynamics
+Summary: The laws of thermodynamics are a set of scientific laws which define a group of physical quantities, such as temperature, energy, and entropy, that characterize t
+Back to the model!
+Calling: {'name': 'wiki-tool', 'args': {'query': 'laws of thermodynamics'}, 'id': 'call_kd1f'}
+
+ ....calling tool....
+ARGS to tool: -----> {'query': 'laws of thermodynamics'}
+RESULT from tool: -----> Page: Laws of thermodynamics
+Summary: The laws of thermodynamics are a set of scientific laws which define a group of physical quantities, such as temperature, energy, and entropy, that characterize t
+Back to the model!
