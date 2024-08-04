@@ -25,6 +25,7 @@ class Agent:
             system: (Optional) The system information for the Agent.
         """
         self.system = system
+        self.agent_log_file = open("files/agent_log.txt", "a", encoding="utf-8")
         graph = StateGraph(AgentState)
         graph.add_node("llm", self.call_groq)
         graph.add_node("action", self.take_action)
@@ -58,18 +59,25 @@ class Agent:
         if self.tools is not None:
             for t in tool_calls:
                 print(f"Calling: {t}")
+                # write to agent log file
+                self.agent_log_file.write(f"Calling: {t}\n")
                 if not t["name"] in self.tools:  # check for bad tool name from LLM
                     print("\n ....bad tool name....")
+                    self.agent_log_file.write("\n ....bad tool name....\n")
                     result = "bad tool name, retry"  # instruct LLM to retry if bad
                 else:
                     print("\n ....calling tool....")
+                    self.agent_log_file.write("\n ....calling tool....\n")
+                    self.agent_log_file.write(f"ARGS to tool: -----> {t['args']}\n")
                     print("ARGS to tool: ----->", t["args"])
                     result = self.tools[t["name"]].invoke(t["args"])
                     print("RESULT from tool -------->", result)
+                    self.agent_log_file.write(f"RESULT from tool: -----> {result}\n")
                 results.append(
                     ToolMessage(
                         tool_call_id=t["id"], name=t["name"], content=str(result)
                     )
                 )
             print("Back to the model!")
+            self.agent_log_file.write("Back to the model!\n")
         return {"messages": results}
